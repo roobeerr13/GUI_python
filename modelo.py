@@ -1,40 +1,45 @@
-import sys
-from PyQt6.QtWidgets import QWidget, QHBoxLayout, QPushButton, QLabel
+from sqlalchemy import create_engine, Column, Integer, String, Float
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
 
-class AppContador(QWidget):
-    def __init__(self):
-        super().__init__()
-        self.contador = 0
+# Configuración de la base de datos
+DATABASE_URL = "sqlite:///movimientos.db"  # Cambia la URL si usas otra base de datos
+engine = create_engine(DATABASE_URL)
+Base = declarative_base()
 
-        self.setWindowTitle("Contador")
-        self.setGeometry(100, 100, 300, 200)
+# Definición del modelo Movimiento
+class Movimiento(Base):
+    __tablename__ = 'movimientos'
 
-        layout = QHBoxLayout()
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    descripcion = Column(String, nullable=False)
+    monto = Column(Float, nullable=False)
+    tipo = Column(String, nullable=False)  # Ejemplo: "ingreso" o "egreso"
 
-        self.label = QLabel("0", self)
-        self.label.setStyleSheet("font-size: 30px;")
+# Crear las tablas en la base de datos
+Base.metadata.create_all(engine)
 
-        self.button = QPushButton("Incrementar", self)
-        self.button.setStyleSheet("""
-            font-size: 20px;
-            border-radius: 20px;
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px;
-            border: 2px solid #3E8E41;
-        """)
+# Crear una sesión para interactuar con la base de datos
+Session = sessionmaker(bind=engine)
+session = Session()
 
-        self.button.clicked.connect(self.suma_contador)
+# Función para agregar un movimiento
+def agregar_movimiento(descripcion, monto, tipo):
+    nuevo_movimiento = Movimiento(descripcion=descripcion, monto=monto, tipo=tipo)
+    session.add(nuevo_movimiento)
+    session.commit()
 
-        layout.addWidget(self.label)
-        layout.addWidget(self.button)
+# Función para obtener todos los movimientos
+def obtener_movimientos():
+    return session.query(Movimiento).all()
 
-        self.setLayout(layout)
+# Ejemplo de uso
+if __name__ == "__main__":
+    # Agregar un movimiento
+    agregar_movimiento("Venta de producto", 150.0, "ingreso")
+    agregar_movimiento("Compra de insumos", -50.0, "egreso")
 
-    def suma_contador(self):
-        self.contador += 1
-        if self.contador == 100:
-            self.label.setText("🎉")
-            self.contador = 0
-        else:
-            self.label.setText(str(self.contador))
+    # Obtener y mostrar todos los movimientos
+    movimientos = obtener_movimientos()
+    for movimiento in movimientos:
+        print(f"ID: {movimiento.id}, Descripción: {movimiento.descripcion}, Monto: {movimiento.monto}, Tipo: {movimiento.tipo}")
