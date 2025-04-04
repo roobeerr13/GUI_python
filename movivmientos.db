@@ -1,0 +1,16 @@
+-- Crear tabla para almacenar movimientos
+CREATE TABLE movimientos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    fecha TEXT NOT NULL,
+    descripcion TEXT NOT NULL,
+    monto REAL NOT NULL,
+    tipo TEXT NOT NULL CHECK(tipo IN ('ingreso', 'gasto')),
+    categoria TEXT
+);
+
+-- Ejemplo de inserción de datos
+INSERT INTO movimientos (fecha, descripcion, monto, tipo, categoria)
+VALUES 
+('2023-01-01', 'Salario', 1500.00, 'ingreso', 'Trabajo'),
+('2023-01-05', 'Compra supermercado', -200.00, 'gasto', 'Alimentos'),
+('2023-01-10', 'Pago de renta', -700.00, 'gasto', 'Vivienda');
